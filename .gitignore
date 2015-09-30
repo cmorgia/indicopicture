@@ -1,0 +1,7 @@
+.idea/
+.webassets-cache/
+*.min.css
+*.min.js
+*.pyc
+*.egg-info
+*.mo
