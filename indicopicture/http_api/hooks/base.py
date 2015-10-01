@@ -42,6 +42,5 @@ class BaseRegistrantsHook(EventBaseHook):
                     reg["session"]=bysession
                 regForm = self._conf.getRegistrationForm()
                 reg["personal_data"] = regForm.getPersonalData().getRegistrantValues(registrant)
-                #reg["personal_data"]["picture"]=registrant.getPictureUrl()
                 registrant_list.append(reg)
         return {"registrants": registrant_list}

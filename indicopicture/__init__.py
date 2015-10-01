@@ -1,29 +1,31 @@
 # coding=utf-8
-import tempfile
+from cStringIO import StringIO
+
+from flask import request
+from webassets import Bundle
+import os
+
 from indico.util.i18n import _
 from MaKaC.PDFinterface.base import SimpleParagraph
 from MaKaC.webinterface.pages.registrants import WRegistrantModifMain, WConfModifRegistrantMiscInfoModify
-from reportlab.lib.units import cm
 from MaKaC.PDFinterface.base import Image as PDFImage
 from indico.MaKaC.badgeDesignConf import ItemAware
 from indico.core.plugins import IndicoPlugin, IndicoPluginBlueprint
 from indico.core import signals
 from indico.core.config import Config
-from flask import request
 import MaKaC.webinterface.urlHandlers as urlHandlers
 from MaKaC.webinterface.common.baseNotificator import TplVar
 from MaKaC.webinterface.common.registrantNotificator import Notificator
 from MaKaC.registration import Registrant, FileInput, FieldInputs, FieldInputType
 from MaKaC.webinterface.pages.registrationForm import WFileInputField
 from MaKaC.badgeDesignConf import BadgeDesignConfiguration
-from indico.core.fossils.registration import IRegFormGeneralFieldFossil, IRegFormFileInputFieldFossil
-from webassets import Bundle
-from cStringIO import StringIO
-import os
+from indico.core.fossils.registration import IRegFormGeneralFieldFossil, IRegFormFileInputFieldFossil, \
+    IRegFormRegistrantBasicFossil
 from indico.web.http_api import HTTPAPIHook
 from indico.web.http_api.hooks.registration import RegistrantFetcher
 from indicopicture.http_api.hooks.bysession import RegistrantsHook,RegistrantsBySessionHook
 import indicopicture.http_api.hooks
+import indicopicture.registrant
 
 blueprint = IndicoPluginBlueprint('indicopicture', __name__)
 
@@ -42,6 +44,8 @@ class IndicoPicturePlugin(IndicoPlugin):
         inputs[PictureInput.getId()] = PictureInput
         taggedValue  = IRegFormGeneralFieldFossil.get('getValues').getTaggedValue('result')
         taggedValue["indicopicture.PictureInput"]=IRegFormFileInputFieldFossil
+
+        RegistrantFetcher.DETAIL_INTERFACES["basic"]=IPictureFossil
 
         # Inject the JS and CSS, should be in limited pages
         self.inject_js('indicopicture_js')
@@ -135,7 +139,6 @@ class PictureInput(FileInput):
                 <div style="position: absolute; top:150px; right:200px"><img style="width: 225px; " src="%s"></div> """ % (uh.getURL(value), value.getFileName(),uh.getURL(value))
 
     def _getModifHTML(self, item, registrant, default=None):
-        from MaKaC.webinterface.pages.registrationForm import WFileInputField
 
         wc = WPictureInputField(self, item, default)
         return wc.getHTML()
@@ -173,9 +176,7 @@ class PictureInput(FileInput):
             f = self.createDefaultPicture(registrant)
             item.setValue(f)
 
-        registrant.picture = item.getValue()
-        url = urlHandlers.UHRegistrantAttachmentFileAccess.getURL(item.getValue())
-        registrant.pictureURL = url.url
+        registrant.setPicture(item.getValue())
 
     def _getSpecialOptionsHTML(self):
         return ""
@@ -246,10 +247,16 @@ def decorateGetVars(fn):
     def new_funct(*args, **kwargs):
         ret = fn(*args, **kwargs)
         self = args[0]
-        ret["registrantPictureUrl"]=self._registrant.pictureURL
+        ret["registrantPictureUrl"]=self._registrant.getPictureURL()
         return ret
     return new_funct
 
 WRegistrantModifMain.getVars = decorateGetVars(WRegistrantModifMain.getVars)
 WConfModifRegistrantMiscInfoModify.getVars = decorateGetVars(WConfModifRegistrantMiscInfoModify.getVars)
 
+class IPictureFossil(IRegFormRegistrantBasicFossil):
+    def getPictureURL(self):
+        """
+        Get picture URL
+        """
+    getPictureURL.result = lambda x: x.getPictureURL() if isinstance(x,Registrant) else ""

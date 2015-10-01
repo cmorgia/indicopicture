@@ -48,7 +48,7 @@ ndRegForm.controller('WebcamCtrl',function($scope,Frozen) {
         // take snapshot and get image data
         Webcam.snap(function (data_uri) {
             // display results in page
-            $('#results').html('<h3>Your picture:</h3>' + '<img src="' + data_uri + '"/>');
+            //$('#results').html('<h3>Your picture:</h3>' + '<img src="' + data_uri + '"/>');
             $('#picture_uri').val(data_uri);
         });
         $('.qtip:visible').qtip("hide");
