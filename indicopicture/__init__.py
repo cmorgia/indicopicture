@@ -21,9 +21,7 @@ from MaKaC.webinterface.pages.registrationForm import WFileInputField
 from MaKaC.badgeDesignConf import BadgeDesignConfiguration
 from indico.core.fossils.registration import IRegFormGeneralFieldFossil, IRegFormFileInputFieldFossil, \
     IRegFormRegistrantBasicFossil
-from indico.web.http_api import HTTPAPIHook
 from indico.web.http_api.hooks.registration import RegistrantFetcher
-from indicopicture.http_api.hooks.bysession import RegistrantsHook,RegistrantsBySessionHook
 import indicopicture.http_api.hooks
 import indicopicture.registrant
 
@@ -51,10 +49,6 @@ class IndicoPicturePlugin(IndicoPlugin):
         self.inject_js('indicopicture_js')
         self.inject_css('indicopicture_css')
 
-        # Register special hooks for the APIs
-        self.registerHook(RegistrantsHook)
-        self.registerHook(RegistrantsBySessionHook)
-
 
     def register_tpl_bundle(self, name, *files):
         def noop(_in, out, **kw):
@@ -72,15 +66,6 @@ class IndicoPicturePlugin(IndicoPlugin):
         self.register_tpl_bundle('picture.tpl.html','tpls/picture.tpl.html')
         self.register_tpl_bundle('webcam.tpl.html','tpls/webcam.tpl.html')
 
-    def registerHook(self,cls):
-        l = []
-        for hook in HTTPAPIHook.HOOK_LIST:
-            if not hook.RE == cls.RE:
-                l.append(hook)
-            else:
-                print "Found duplicate"
-        l.append(cls)
-        HTTPAPIHook.HOOK_LIST = l
 
     def get_blueprints(self):
         return blueprint
