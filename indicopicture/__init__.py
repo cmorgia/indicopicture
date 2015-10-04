@@ -17,7 +17,8 @@ import MaKaC.webinterface.urlHandlers as urlHandlers
 from MaKaC.webinterface.common.baseNotificator import TplVar
 from MaKaC.webinterface.common.registrantNotificator import Notificator
 from MaKaC.registration import Registrant, FileInput, FieldInputs, FieldInputType
-from MaKaC.webinterface.pages.registrationForm import WFileInputField
+from MaKaC.webinterface.pages.registrationForm import WFileInputField, WPRegistrationFormDisplay, \
+    WPRegistrationFormModify, WPConfModifRegFormPreview
 from MaKaC.badgeDesignConf import BadgeDesignConfiguration
 from indico.core.fossils.registration import IRegFormGeneralFieldFossil, IRegFormFileInputFieldFossil, \
     IRegFormRegistrantBasicFossil
@@ -46,8 +47,12 @@ class IndicoPicturePlugin(IndicoPlugin):
         RegistrantFetcher.DETAIL_INTERFACES["basic"]=IPictureFossil
 
         # Inject the JS and CSS, should be in limited pages
-        self.inject_js('indicopicture_js')
-        self.inject_css('indicopicture_css')
+        self.inject_js('indicopicture_js', WPRegistrationFormDisplay)
+        self.inject_js('indicopicture_js', WPRegistrationFormModify)
+        self.inject_js('indicopicture_js', WPConfModifRegFormPreview)
+        self.inject_css('indicopicture_css', WPRegistrationFormDisplay)
+        self.inject_css('indicopicture_css', WPRegistrationFormModify)
+        self.inject_css('indicopicture_css', WPConfModifRegFormPreview)
 
 
     def register_tpl_bundle(self, name, *files):
