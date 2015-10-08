@@ -7,7 +7,8 @@ import os
 
 from indico.util.i18n import _
 from MaKaC.PDFinterface.base import SimpleParagraph
-from MaKaC.webinterface.pages.registrants import WRegistrantModifMain, WConfModifRegistrantMiscInfoModify
+from MaKaC.webinterface.pages.registrants import WRegistrantModifMain, WConfModifRegistrantMiscInfoModify, \
+    WPRegistrantModification
 from MaKaC.PDFinterface.base import Image as PDFImage
 from indico.MaKaC.badgeDesignConf import ItemAware
 from indico.core.plugins import IndicoPlugin, IndicoPluginBlueprint
@@ -18,7 +19,7 @@ from MaKaC.webinterface.common.baseNotificator import TplVar
 from MaKaC.webinterface.common.registrantNotificator import Notificator
 from MaKaC.registration import Registrant, FileInput, FieldInputs, FieldInputType
 from MaKaC.webinterface.pages.registrationForm import WFileInputField, WPRegistrationFormDisplay, \
-    WPRegistrationFormModify, WPConfModifRegFormPreview
+    WPRegistrationFormModify, WPConfModifRegFormPreview, WPRegistrationForm
 from MaKaC.badgeDesignConf import BadgeDesignConfiguration
 from indico.core.fossils.registration import IRegFormGeneralFieldFossil, IRegFormFileInputFieldFossil, \
     IRegFormRegistrantBasicFossil
@@ -47,12 +48,15 @@ class IndicoPicturePlugin(IndicoPlugin):
         RegistrantFetcher.DETAIL_INTERFACES["basic"]=IPictureFossil
 
         # Inject the JS and CSS, should be in limited pages
-        self.inject_js('indicopicture_js', WPRegistrationFormDisplay)
-        self.inject_js('indicopicture_js', WPRegistrationFormModify)
-        self.inject_js('indicopicture_js', WPConfModifRegFormPreview)
-        self.inject_css('indicopicture_css', WPRegistrationFormDisplay)
-        self.inject_css('indicopicture_css', WPRegistrationFormModify)
-        self.inject_css('indicopicture_css', WPConfModifRegFormPreview)
+        pages = [
+            WPRegistrationFormDisplay,
+            WPRegistrationFormModify,
+            WPConfModifRegFormPreview,
+            WPRegistrationForm,
+            WPRegistrantModification]
+        for page in pages:
+            self.inject_js('indicopicture_js', page)
+            self.inject_css('indicopicture_css', page)
 
 
     def register_tpl_bundle(self, name, *files):
@@ -125,8 +129,13 @@ class PictureInput(FileInput):
         url = uh.getURL(value)
         fileName = value.getFileName()
 
-        return """<a href="%s" class="claudio">%s</a>
-                <div style="position: absolute; top:150px; right:200px"><img style="width: 225px; " src="%s"></div> """ % (uh.getURL(value), value.getFileName(),uh.getURL(value))
+        return """<a href="%s">%s</a>
+                <div class="picturebox">
+                <img style="width: 225px; " src="%s"></div>
+                 <script>
+                 movePictureBox(%i);
+                 </script>
+                 """ % (uh.getURL(value), value.getFileName(),uh.getURL(value),request.blueprint=='event_mgmt')
 
     def _getModifHTML(self, item, registrant, default=None):
 

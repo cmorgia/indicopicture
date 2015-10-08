@@ -12,7 +12,7 @@ def setPicture(self,picture):
 
 
 def getPictureURL(self):
-    return self._pictureUrl
+    return self._pictureUrl if hasattr(self,'_pictureUrl') else ''
 
 
 Registrant.getPicture = getPicture

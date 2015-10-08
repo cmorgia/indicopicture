@@ -1,3 +1,19 @@
+function movePictureBox(strategy) {
+    var parent;
+    if (strategy==undefined) {
+        parent = $('.picturebox:first').parents('div.i-box-content');
+    } else if (strategy==0) {
+        parent = $('.picturebox:first').parents('table:first').parents('tr:first');
+    } else if (strategy==1) {
+        parent = $('.picturebox:first').parents('table:first').parents('tr:first');
+    } else {
+        console.log("Unexpected strategy for displaing picture: "+strategy);
+    }
+
+    $('.picturebox').appendTo(parent);
+    //$('.picturebox').css({"position": "absolute", "top":"100px", "right":"250px","width":"225px"});
+}
+
 ndServices.provider('curl', function() {
     var baseUrl = Indico.Urls.Base;
     var modulePath = '';
@@ -32,11 +48,12 @@ ndRegForm.directive('ndPictureField', function(curl) {
             $scope.tplInput = curl.tpl('picture.tpl.html');
         },
 
-        link: function(scope) {
+        link: function(scope,element) {
             scope.settings.fieldName = $T("Picture");
             scope.removeAttachment = function() {
                 delete scope.userdata[scope.getName(scope.field.input)];
             };
+            movePictureBox();
         }
     };
 });
@@ -47,8 +64,6 @@ ndRegForm.controller('WebcamCtrl',function($scope,Frozen) {
     $scope.take_snapshot = function() {
         // take snapshot and get image data
         Webcam.snap(function (data_uri) {
-            // display results in page
-            //$('#results').html('<h3>Your picture:</h3>' + '<img src="' + data_uri + '"/>');
             $('#picture_uri').val(data_uri);
         });
         $('.qtip:visible').qtip("hide");
